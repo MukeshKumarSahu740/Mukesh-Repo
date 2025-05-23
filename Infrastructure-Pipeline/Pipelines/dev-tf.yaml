@@ -1,0 +1,8 @@
+trigger: none
+
+pool: my-agent
+
+stages:
+- template: tf-template.yaml
+  parameters: 
+    environment: dev

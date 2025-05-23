@@ -1,0 +1,9 @@
+trigger: 
+- main
+
+pool: my-agent
+
+stages:
+- template: tf-template.yaml
+  parameters: 
+    environment: prod

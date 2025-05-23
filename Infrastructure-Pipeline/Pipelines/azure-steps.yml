@@ -1,0 +1,26 @@
+pool: Self-agent
+
+trigger: none
+
+steps:
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: 'latest'
+- task: TerraformTaskV4@4
+  displayName: terraform init
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/2411TF/ENVIRONMENTS/DEV'
+    backendServiceArm: 'pipelineapp sc'
+    backendAzureRmResourceGroupName: 'skdmp'
+    backendAzureRmStorageAccountName: 'skdmpstg'
+    backendAzureRmContainerName: 'azcontainer'
+    backendAzureRmKey: 'terraform.tfstate'
+- task: TerraformTaskV4@4
+  displayName: terraform plan
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/2411TF/ENVIRONMENTS/DEV'
+    environmentServiceNameAzureRM: 'pipelineapp sc'

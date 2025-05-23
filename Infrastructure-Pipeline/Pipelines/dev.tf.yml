@@ -1,0 +1,68 @@
+variables:
+  Work_Dir: '$(System.DefaultWorkingDirectory)/ENVIRONMENTS/my env'
+  
+trigger: none
+pool: my-agent
+stages:
+- stage: TerraformInitAndPlanStage
+  displayName: Terraform Init and Terraform Plan
+  jobs:
+  - job: TerraformInitPlanJob
+    displayName: terraform init & plan
+    steps:
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(Work_Dir)'
+        backendServiceArm: 'agent-services'
+        backendAzureRmResourceGroupName: 'skdmp'
+        backendAzureRmStorageAccountName: 'skdmpstg'
+        backendAzureRmContainerName: 'azcontainer'
+        backendAzureRmKey: 'terraform.tfstate'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(Work_Dir)'
+        commandOptions: '--var-file=dev.terraform.tfvars'
+        environmentServiceNameAzureRM: 'agent-services'
+    - task: tfsec@1
+      inputs:
+        version: 'v1.26.0'
+        dir: '$(Work_Dir)'    
+- stage: TerraformApply
+  displayName: Terraform Apply
+  jobs:
+  - job: ManualValidationJob
+    displayName: manual validation
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
+    pool: server
+    steps: 
+    - task: ManualValidation@1
+      inputs:
+        notifyUsers: 'echo pipe@abc.com'
+        instructions: 'please validate the plan'
+
+  - job: TerraformInitApplyJob
+    displayName: terraformInitPlanApply
+    dependsOn: ManualValidationJob
+    steps:
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(Work_Dir)'
+        backendServiceArm: 'agent-services'
+        backendAzureRmResourceGroupName: 'skdmp'
+        backendAzureRmStorageAccountName: 'skdmpstg'
+        backendAzureRmContainerName: 'azcontainer'
+        backendAzureRmKey: 'terraform.tfstate'
+    
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: '$(Work_Dir)'
+        commandOptions: '--var-file=dev.terraform.tfvars'
+        environmentServiceNameAzureRM: 'agent-services'
