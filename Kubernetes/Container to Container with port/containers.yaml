@@ -1,0 +1,14 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: twocons
+spec:
+  containers:
+    - name: firefoxcontainer
+      image: linuxserver/firefox
+      ports:
+        - containerPort: 3000
+    - name: nginxcontainer
+      image: nginx
+      ports:
+        - containerPort: 80

@@ -1,0 +1,11 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: dhondupod3
+spec:
+  containers:
+    - name: dhonducontainer3
+      image: nginx:latest
+    - name: dhonducontainer4
+      image: nginx:latest
+    
